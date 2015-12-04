@@ -27,7 +27,7 @@ public class EndlessRecyclerViewAdapter extends RecyclerViewAdapterWrapper {
     private boolean displayIndicator;
 
     public EndlessRecyclerViewAdapter(Context context, Adapter wrapped, RequestToLoadMoreListener requestToLoadMoreListener, @LayoutRes int pendingViewResId, boolean keepOnAppending,
-                                      boolean displayIndicatorOnFirstLoading, boolean displayIndicator) {
+                                      boolean displayIndicator, boolean displayIndicatorOnFirstLoading) {
         super(wrapped);
         this.context = context;
         this.requestToLoadMoreListener = requestToLoadMoreListener;
