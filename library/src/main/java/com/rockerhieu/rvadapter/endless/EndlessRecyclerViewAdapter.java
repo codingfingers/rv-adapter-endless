@@ -5,6 +5,7 @@ import android.support.annotation.LayoutRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import com.rockerhieu.rvadapter.RecyclerViewAdapterWrapper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,18 +23,27 @@ public class EndlessRecyclerViewAdapter extends RecyclerViewAdapterWrapper {
     private AtomicBoolean keepOnAppending;
     private AtomicBoolean dataPending;
     private RequestToLoadMoreListener requestToLoadMoreListener;
+    private boolean displayIndicatorOnFirstLoading;
+    private boolean displayIndicator;
 
-    public EndlessRecyclerViewAdapter(Context context, Adapter wrapped, RequestToLoadMoreListener requestToLoadMoreListener, @LayoutRes int pendingViewResId, boolean keepOnAppending) {
+    public EndlessRecyclerViewAdapter(Context context, Adapter wrapped, RequestToLoadMoreListener requestToLoadMoreListener, @LayoutRes int pendingViewResId, boolean keepOnAppending,
+                                      boolean displayIndicatorOnFirstLoading, boolean displayIndicator) {
         super(wrapped);
         this.context = context;
         this.requestToLoadMoreListener = requestToLoadMoreListener;
         this.pendingViewResId = pendingViewResId;
         this.keepOnAppending = new AtomicBoolean(keepOnAppending);
+        this.displayIndicatorOnFirstLoading = displayIndicatorOnFirstLoading;
+        this.displayIndicator = displayIndicator;
         dataPending = new AtomicBoolean(false);
     }
 
+    public EndlessRecyclerViewAdapter(Context context, Adapter wrapped, RequestToLoadMoreListener requestToLoadMoreListener, boolean displayIndicator, boolean displayIndicatorOnFirstLoading) {
+        this(context, wrapped, requestToLoadMoreListener, R.layout.item_loading, true, displayIndicator, displayIndicatorOnFirstLoading);
+    }
+
     public EndlessRecyclerViewAdapter(Context context, Adapter wrapped, RequestToLoadMoreListener requestToLoadMoreListener) {
-        this(context, wrapped, requestToLoadMoreListener, R.layout.item_loading, true);
+        this(context, wrapped, requestToLoadMoreListener, R.layout.item_loading, true, false, false);
     }
 
     private void stopAppending() {
@@ -69,12 +79,25 @@ public class EndlessRecyclerViewAdapter extends RecyclerViewAdapterWrapper {
 
     @Override
     public int getItemCount() {
-        return super.getItemCount() + (keepOnAppending.get() ? 1 : 0);
+        int count = super.getItemCount();
+        if (displayIndicator) {
+            if (displayIndicatorOnFirstLoading) {
+                return count + (keepOnAppending.get() ? 1 : 0);
+            } else {
+                if (count == 0) {
+                    return count;
+                } else {
+                    return count + (keepOnAppending.get() ? 1 : 0);
+                }
+            }
+        } else {
+            return count;
+        }
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (position == getWrappedAdapter().getItemCount()) {
+        if (position == getWrappedAdapter().getItemCount() && position != 0) {
             return TYPE_PENDING;
         }
         return super.getItemViewType(position);
